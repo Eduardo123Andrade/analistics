@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { Status } from '../faturas'
 import { faturas } from '../dados'
 
-export const STATUS_LABEL = { fechada: 'Fechada', atual: 'Atual', aberta: 'Aberta' } as const
+export const STATUS_LABEL = { fechada: 'Fechada', atual: 'Atual', aberta: 'Aberta', estimada: 'Estimada' } as const
 
 export const StatusTag = ({ status }: { status: Status }) => (
   <span className={`tag tag-${status}`}>{STATUS_LABEL[status]}</span>
@@ -14,11 +14,11 @@ export const eixoY = (v: number) => `R$ ${(v / 1000).toLocaleString('pt-BR', { m
 // Faturas ainda não fechadas ganham "*" no eixo.
 export const tickX = (label: string) => {
   const f = faturas.find((x) => x.label === label)
-  return f && f.status !== 'fechada' ? `${label}*` : label
+  return f?.status === 'fechada' ? label : `${label}*`
 }
 
-// No eixo dos gráficos só cabe o mês ("Jan/26" -> "Jan").
-const tickEixo = (label: string) => tickX(label).replace(/\/\d{2}/, '')
+// No eixo dos gráficos só cabe o mês ("Fev/26" -> "Fev"); janeiro mantém o ano para marcar a virada.
+const tickEixo = (label: string) => (label.startsWith('Jan') ? tickX(label) : tickX(label).replace(/\/\d{2}/, ''))
 
 export const textoLegenda = (v: string) => <span style={{ color: 'var(--text-2)' }}>{v}</span>
 
@@ -44,5 +44,22 @@ export function Card({ titulo, nota, children }: { titulo: string; nota?: ReactN
       {nota && <p className="nota">{nota}</p>}
       {children}
     </section>
+  )
+}
+
+// Padrões hachurados para as partes estimadas; ficam num SVG à parte (renderizado uma vez no App)
+// e são referenciados por id: fill="url(#hachura-2)".
+export function Hachuras() {
+  return (
+    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
+      <defs>
+        {[2, 3].map((n) => (
+          <pattern key={n} id={`hachura-${n}`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="6" height="6" fill={`var(--series-${n})`} fillOpacity={0.2} />
+            <line x1="0" y1="0" x2="0" y2="6" stroke={`var(--series-${n})`} strokeWidth="3" />
+          </pattern>
+        ))}
+      </defs>
+    </svg>
   )
 }

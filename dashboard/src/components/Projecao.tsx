@@ -1,4 +1,4 @@
-import { Bar, BarChart, Cell, ErrorBar, Legend, ResponsiveContainer, Tooltip } from 'recharts'
+import { Bar, BarChart, ErrorBar, Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { brl, faturas, idxUltimaFechada } from '../dados'
@@ -10,7 +10,6 @@ import { Card, eixos, margem, StatusTag, textoLegenda } from './grafico'
 
 const dados = projecoes.map((p) => ({
   ...p,
-  label: p.fatura.label,
   // ErrorBar recebe [abaixo, acima] relativos ao topo da pilha.
   faixa: [p.total - p.totalMin, p.totalMax - p.total],
 }))
@@ -40,25 +39,39 @@ function Dica({ active, payload }: TooltipContentProps<ValueType, NameType>) {
   const p = payload[0].payload as P
   return (
     <div className="tooltip">
-      <div className="tooltip-titulo">{p.fatura.label} <StatusTag status={p.fatura.status} /></div>
+      <div className="tooltip-titulo">{p.label} <StatusTag status={p.status} /></div>
       <Linhas p={p} />
     </div>
   )
 }
 
-// Padrões hachurados para as partes estimadas; ficam num SVG à parte e são referenciados por id.
-function Hachuras() {
+// Só atual e aberta ganham card; os meses estimados ficam no gráfico e na tabela.
+const comCsv = projecoes.filter((p) => p.status !== 'estimada')
+
+function TabelaProjecoes() {
   return (
-    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
-      <defs>
-        {[2, 3].map((n) => (
-          <pattern key={n} id={`hachura-${n}`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="6" height="6" fill={`var(--series-${n})`} fillOpacity={0.2} />
-            <line x1="0" y1="0" x2="0" y2="6" stroke={`var(--series-${n})`} strokeWidth="3" />
-          </pattern>
-        ))}
-      </defs>
-    </svg>
+    <div className="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fatura</th><th>Status</th><th>Base</th><th>Recorrente</th><th>Adicional</th><th>Total estimado</th><th>Faixa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {projecoes.map((p) => (
+            <tr key={p.vencimento}>
+              <td>{p.label}</td>
+              <td><StatusTag status={p.status} /></td>
+              <td>{brl(p.base)}</td>
+              <td>{brl(p.recorrenteLancado + p.recorrentePrevisto)}</td>
+              <td>{brl(p.adicionalLancado + p.adicionalEstimado)}</td>
+              <td><b>{brl(p.total)}</b></td>
+              <td>{brl(p.totalMin)} – {brl(p.totalMax)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -81,9 +94,9 @@ function Explicacao() {
           </tbody>
         </table>
       </div>
-      {projecoes.map((p) => (
-        <div key={p.fatura.vencimento}>
-          <h3>Recorrências previstas em {p.fatura.label}</h3>
+      {comCsv.map((p, i) => (
+        <div key={p.vencimento}>
+          <h3>Recorrências previstas em {p.label}{i === comCsv.length - 1 && ' em diante'}</h3>
           <table>
             <tbody>
               {p.pendentes.map((r) => (
@@ -105,37 +118,36 @@ export function Projecao() {
       nota={<>
         Base e recorrências já são conhecidas. O adicional é estimado pela média entre o menor
         ({brl(adicionalMin)}) e o maior ({brl(adicionalMax)}) adicional das faturas fechadas — na fatura atual,
-        só entra o que falta para chegar nela. A faixa vai do cenário mínimo ao máximo.
+        só entra o que falta para chegar nela. A faixa vai do cenário mínimo ao máximo. Meses estimados (sem CSV)
+        usam as parcelas que já existem e as recorrências ativas; parcelamentos novos ainda vão somar à base.
       </>}
     >
-      <Hachuras />
-      <div className="projecao">
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={dados} margin={margem} barSize={72}>
-            {eixos}
-            <Tooltip content={Dica} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
-            {SEGMENTOS.map((s, i) => (
-              <Bar key={s.chave} dataKey={s.chave} name={s.nome} stackId="p" fill={s.fill} stroke="var(--surface)"
-                strokeWidth={1} radius={i === SEGMENTOS.length - 1 ? [4, 4, 0, 0] : undefined}>
-                {i === SEGMENTOS.length - 1 && <ErrorBar dataKey="faixa" width={16} stroke="var(--text-2)" strokeWidth={1.5} />}
-                {dados.map((d) => <Cell key={d.fatura.vencimento} />)}
-              </Bar>
-            ))}
-            <Legend iconType="square" itemSorter={(i) => SEGMENTOS.findIndex((s) => s.nome === i.value)} formatter={textoLegenda} wrapperStyle={{ fontSize: 12 }} />
-          </BarChart>
-        </ResponsiveContainer>
-        <div className="projecao-cards">
-          {projecoes.map((p) => (
-            <div key={p.fatura.vencimento} className="kpi">
-              <span>{p.fatura.label} <StatusTag status={p.fatura.status} /></span>
-              <strong>{brl(p.total)}</strong>
-              <p className="faixa">entre {brl(p.totalMin)} e {brl(p.totalMax)}</p>
-              <Linhas p={p} />
-            </div>
+      <ResponsiveContainer width="100%" height={340}>
+        <BarChart data={dados} margin={margem} barCategoryGap="25%">
+          {eixos}
+          <Tooltip content={Dica} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
+          {SEGMENTOS.map((s, i) => (
+            <Bar key={s.chave} dataKey={s.chave} name={s.nome} stackId="p" fill={s.fill} stroke="var(--surface)"
+              strokeWidth={1} radius={i === SEGMENTOS.length - 1 ? [4, 4, 0, 0] : undefined}>
+              {i === SEGMENTOS.length - 1 && <ErrorBar dataKey="faixa" width={12} stroke="var(--text-2)" strokeWidth={1.5} />}
+            </Bar>
           ))}
-        </div>
+          <Legend iconType="square" itemSorter={(i) => SEGMENTOS.findIndex((s) => s.nome === i.value)} formatter={textoLegenda} wrapperStyle={{ fontSize: 12 }} />
+        </BarChart>
+      </ResponsiveContainer>
+      <div className="projecao-cards">
+        {comCsv.map((p) => (
+          <div key={p.vencimento} className="kpi">
+            <span>{p.label} <StatusTag status={p.status} /></span>
+            <strong>{brl(p.total)}</strong>
+            <p className="faixa">entre {brl(p.totalMin)} e {brl(p.totalMax)}</p>
+            <Linhas p={p} />
+          </div>
+        ))}
       </div>
       <Detalhes>
+        <h3>Mês a mês</h3>
+        <TabelaProjecoes />
         <Explicacao />
       </Detalhes>
     </Card>

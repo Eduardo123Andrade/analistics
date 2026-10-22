@@ -7,7 +7,8 @@ const arquivos = import.meta.glob('../../.csvs/Nubank_*.csv', {
   eager: true,
 }) as Record<string, string>
 
-export type Status = 'fechada' | 'atual' | 'aberta'
+// 'estimada': mês futuro sem CSV, projetado a partir das parcelas e recorrências.
+export type Status = 'fechada' | 'atual' | 'aberta' | 'estimada'
 
 export interface Lancamento {
   title: string
@@ -25,6 +26,19 @@ export interface Fatura {
 }
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+// Vencimento (YYYY-MM-DD) deslocado de `meses` meses.
+export function somarMeses(vencimento: string, meses: number) {
+  const [ano, mes, dia] = vencimento.split('-').map(Number)
+  const d = new Date(ano, mes - 1 + meses, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+}
+
+// Rótulo "Mmm/aa" do mês do vencimento deslocado de `meses` meses.
+export function labelMes(vencimento: string, meses = 0) {
+  const [ano, mes] = somarMeses(vencimento, meses).split('-').map(Number)
+  return `${MESES[mes - 1]}/${String(ano).slice(2)}`
+}
 
 // "1.234,56" / "- 90,23" -> number
 const parseValor = (s: string) => Number(s.replace(/\s/g, '').replace(/\./g, '').replace(',', '.'))
@@ -69,8 +83,7 @@ export const faturas: Fatura[] = Object.entries(arquivos)
       if (ehBase(title)) base += amount
       else adicional += amount
     }
-    const [ano, mes] = vencimento.split('-').map(Number)
-    return { vencimento, base, adicional, total: base + adicional, lancamentos, label: `${MESES[mes - 1]}/${String(ano).slice(2)}` }
+    return { vencimento, base, adicional, total: base + adicional, lancamentos, label: labelMes(vencimento) }
   })
   .sort((a, b) => a.vencimento.localeCompare(b.vencimento))
   .map((f, i, todas) => {

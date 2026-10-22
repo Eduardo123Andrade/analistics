@@ -1,3 +1,5 @@
+import { Antecipacao } from './components/Antecipacao'
+import { Hachuras } from './components/grafico'
 import { Kpis } from './components/Kpis'
 import { Projecao } from './components/Projecao'
 import { Recorrencias } from './components/Recorrencias'
@@ -7,6 +9,7 @@ import { faturas } from './dados'
 export default function App() {
   return (
     <main>
+      <Hachuras />
       <header>
         <h1>Faturas Nubank</h1>
         <p className="sub">
@@ -17,6 +20,7 @@ export default function App() {
       <VisaoGeral />
       <Projecao />
       <Recorrencias />
+      <Antecipacao />
     </main>
   )
 }

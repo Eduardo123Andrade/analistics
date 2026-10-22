@@ -11,6 +11,7 @@
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --series-3: #1baf7a;
+  --series-4: #eda100;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-1);
   background: var(--page);
@@ -28,6 +29,7 @@
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;
+    --series-4: #c98500;
   }
 }
 * { box-sizing: border-box; }
@@ -81,8 +83,7 @@ h3 { margin: 20px 0 8px; font-size: 14px; }
 .hachurado { background: repeating-linear-gradient(45deg, var(--surface) 0 2px, currentColor 2px 4px) !important; }
 .swatch-recorrente.hachurado { color: var(--series-3); }
 .swatch-adicional.hachurado { color: var(--series-2); }
-.projecao { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; align-items: center; }
-.projecao-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.projecao-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
 .projecao-cards .kpi { background: var(--page); font-size: 12px; }
 .projecao-cards .kpi span { display: flex; gap: 8px; align-items: center; }
 .faixa { margin: 2px 0 10px; color: var(--text-2); font-size: 12px; }
@@ -91,3 +92,15 @@ h3 { margin: 20px 0 8px; font-size: 14px; }
 .explicacao td { padding: 5px 8px; }
 .explicacao td.marca { color: var(--text-2); text-align: left; }
 .explicacao tr.destaque td { font-weight: 600; border-top: 1px solid var(--baseline); }
+.campo-valor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); margin: 8px 0 4px; }
+.input-reais { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px; background: var(--page); color: var(--text-1); font-size: 16px; font-weight: 600; }
+.input-reais:focus-within { border-color: var(--series-1); }
+.input-reais input { border: 0; outline: 0; background: transparent; font: inherit; color: inherit; width: 9ch; }
+tr.escolhido td { background: color-mix(in srgb, var(--series-1) 12%, transparent); }
+.tag-estimada { border-style: dotted; }
+.swatch-antes { width: 14px; height: 2px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--text-2) 0 4px, transparent 4px 7px); }
+.opcao { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 4px; cursor: pointer; }
+.tabela-efeito th:nth-child(2), .tabela-efeito td:nth-child(2) { text-align: right; }
+.swatch-antecipacao { background: var(--series-4); }
+.opcoes { display: flex; flex-wrap: wrap; gap: 4px 20px; }
