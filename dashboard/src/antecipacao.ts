@@ -1,4 +1,4 @@
-import { faturas } from './dados'
+import { faturas, lancamentosRecorrentes } from './dados'
 import { labelMes } from './faturas'
 import { projecoes } from './projecao'
 
@@ -22,7 +22,8 @@ export const projecaoAlvo = projecoes.find((p) => p.vencimento === alvo?.vencime
 
 export const candidatos: Candidato[] = (alvo?.lancamentos ?? [])
   .map((l, id) => ({ l, id, m: l.title.match(/^(.*) - Parcela (\d+)\/(\d+)$/) }))
-  .filter(({ m, l }) => m !== null && l.amount > 0)
+  // Plano parcelado renovado conta como recorrência, não como parcela a antecipar.
+  .filter(({ m, l }) => m !== null && l.amount > 0 && !lancamentosRecorrentes.has(l))
   .map(({ l, id, m }) => {
     const atual = Number(m![2])
     const total = Number(m![3])

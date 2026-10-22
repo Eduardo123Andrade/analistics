@@ -61,7 +61,10 @@ function LinhaDoTempo() {
         <tbody>
           {recorrencias.map((r) => (
             <tr key={r.nome} className={r.ativa ? '' : 'encerrada'}>
-              <td className="nome">{r.nome}</td>
+              <td className="nome">
+                {r.nome}
+                {r.parcelado && <span className="tag tag-parcelado">parcelado {r.parcelado}×</span>}
+              </td>
               <td><span className={`tag ${r.ativa ? 'tag-ativa' : ''}`}>{r.ativa ? 'Ativa' : 'Encerrada'}</span></td>
               <td>{inicioLabel(r.inicio)}</td>
               <td>{r.ativa ? '—' : faturas[r.fim].label}</td>
@@ -89,7 +92,7 @@ export function Recorrencias() {
   return (
     <Card
       titulo="Recorrências"
-      nota="Cobranças que não são parcela e se repetem mês a mês com valor parecido (pelo menos 3 meses). IOF de assinatura internacional está somado à assinatura."
+      nota="Cobranças que se repetem mês a mês com valor parecido (pelo menos 3 meses), incluindo planos parcelados renovados sempre que acabam. IOF de assinatura internacional está somado à assinatura."
     >
       <ResumoRecorrencias />
       <ResponsiveContainer width="100%" height={260}>

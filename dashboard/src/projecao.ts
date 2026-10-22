@@ -1,4 +1,4 @@
-import { faturas, recorrencias } from './dados'
+import { faturas, lancamentosRecorrentes, recorrencias } from './dados'
 import { labelMes, somarMeses, type Status } from './faturas'
 import type { Recorrencia } from './recorrencias'
 
@@ -60,7 +60,9 @@ const comCsv = faturas
 
 // Meses depois do último CSV: as parcelas dele avançam um mês por vez até acabarem.
 const ultima = faturas.at(-1)!
+// Parcelas de plano renovado já entram como recorrência (ativas), não como base.
 const parcelasUltima = ultima.lancamentos
+  .filter((l) => !lancamentosRecorrentes.has(l))
   .map((l) => ({ valor: l.amount, m: l.title.match(/Parcela (\d+)\/(\d+)$/) }))
   .filter(({ m }) => m !== null)
   .map(({ valor, m }) => ({ valor, restantesDepois: Number(m![2]) - Number(m![1]) }))
