@@ -18,14 +18,13 @@ const MIN_MESES = 3
 // Corta coisas como Uber, posto, recarga de ônibus, onde valores parecidos se repetem por acaso.
 const MIN_FRACAO_RECORRENTE = 0.5
 
-// Mesma assinatura cobrada com nomes diferentes ao longo do tempo.
-const APELIDOS: Record<string, string> = {
-  'Br1*Rocketseat': 'Rocketseat',
-  'Sta*Lia Rocketsea': 'Rocketseat',
-  'Claude.Ai Subscription': 'Claude',
-  'Anthropic* Claude Sub': 'Claude',
-  'Ajuste a crédito': 'Claude', // estorno do IOF do Claude (jan–mar/26)
-}
+// Mesma assinatura cobrada com nomes diferentes ao longo do tempo (o intermediador de
+// pagamento muda: Br1*, Sta*Lia, Malga*...), então casa por trecho do nome.
+const APELIDOS: [RegExp, string][] = [
+  [/rocketsea/i, 'Rocketseat'],
+  [/claude/i, 'Claude'],
+  [/^Ajuste a crédito$/, 'Claude'], // estorno do IOF do Claude (jan–mar/26)
+]
 
 // Repetem valor todo mês mas não são assinatura (recargas etc.).
 const IGNORAR = new Set(['0002 Urbana Pe'])
@@ -35,7 +34,7 @@ function normalizar(title: string) {
   const semIof = title
     .replace(/^IOF de volta de (.*)$/, '$1')
     .replace(/^IOF de "(.*)"$/, '$1')
-  return APELIDOS[semIof] ?? semIof
+  return APELIDOS.find(([padrao]) => padrao.test(semIof))?.[1] ?? semIof
 }
 
 const parecido = (a: number, b: number) =>

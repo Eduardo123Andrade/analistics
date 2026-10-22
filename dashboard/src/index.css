@@ -72,3 +72,22 @@ h3 { margin: 20px 0 8px; font-size: 14px; }
 .swatch-recorrente { background: var(--series-3); }
 .lado-a-lado { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 20px; }
 .lado-a-lado .card { min-width: 0; }
+.ver-mais { margin-top: 12px; font: inherit; font-size: 13px; color: var(--text-1); background: var(--page);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+.ver-mais:hover { border-color: var(--series-3); }
+.visao-geral { display: grid; gap: 12px; justify-items: start; }
+.visao-geral > * { width: 100%; }
+.visao-geral > .ver-mais { width: auto; margin-top: 0; }
+.hachurado { background: repeating-linear-gradient(45deg, var(--surface) 0 2px, currentColor 2px 4px) !important; }
+.swatch-recorrente.hachurado { color: var(--series-3); }
+.swatch-adicional.hachurado { color: var(--series-2); }
+.projecao { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; align-items: center; }
+.projecao-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.projecao-cards .kpi { background: var(--page); font-size: 12px; }
+.projecao-cards .kpi span { display: flex; gap: 8px; align-items: center; }
+.faixa { margin: 2px 0 10px; color: var(--text-2); font-size: 12px; }
+.explicacao { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.explicacao table { font-size: 12px; }
+.explicacao td { padding: 5px 8px; }
+.explicacao td.marca { color: var(--text-2); text-align: left; }
+.explicacao tr.destaque td { font-weight: 600; border-top: 1px solid var(--baseline); }

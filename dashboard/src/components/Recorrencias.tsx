@@ -3,6 +3,7 @@ import type { TooltipContentProps } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { brl, faturas, faturasComRecorrencia, idxUltimaFechada, recorrencias, type FaturaDetalhada } from '../dados'
 import { Card, eixos, margem, opacidade, StatusTag, tickX } from './grafico'
+import { Detalhes } from './Detalhes'
 
 function DicaRecorrencia({ active, payload }: TooltipContentProps<ValueType, NameType>) {
   if (!active || !payload?.length) return null
@@ -99,8 +100,10 @@ export function Recorrencias() {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <h3>Linha do tempo</h3>
-      <LinhaDoTempo />
+      <Detalhes>
+        <h3>Linha do tempo</h3>
+        <LinhaDoTempo />
+      </Detalhes>
     </Card>
   )
 }

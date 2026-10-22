@@ -1,8 +1,7 @@
-import { ComposicaoChart } from './components/ComposicaoChart'
-import { EvolucaoChart } from './components/EvolucaoChart'
 import { Kpis } from './components/Kpis'
+import { Projecao } from './components/Projecao'
 import { Recorrencias } from './components/Recorrencias'
-import { TabelaFaturas } from './components/TabelaFaturas'
+import { VisaoGeral } from './components/VisaoGeral'
 import { faturas } from './dados'
 
 export default function App() {
@@ -15,12 +14,9 @@ export default function App() {
         </p>
       </header>
       <Kpis />
-      <div className="lado-a-lado">
-        <EvolucaoChart />
-        <ComposicaoChart />
-      </div>
+      <VisaoGeral />
+      <Projecao />
       <Recorrencias />
-      <TabelaFaturas />
     </main>
   )
 }
