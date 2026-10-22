@@ -13,28 +13,81 @@ const parcela = (title: string) => title.match(/^(.*) - Parcela (\d+)\/(\d+)$/)
 
 const dataCurta = (date: string) => date.split('-').reverse().slice(0, 2).join('/')
 
-function TabelaLancamentos({ itens }: { itens: Lancamento[] }) {
+interface Grupo {
+  nome: string
+  itens: Lancamento[] // do mais recente para o mais antigo
+  total: number
+  parcelas?: number // N quando é um parcelamento novo (1/N)
+}
+
+// Agrupa por estabelecimento; parcelamento novo usa o nome sem o "- Parcela 1/N".
+function agrupar(itens: Lancamento[]): Grupo[] {
+  const grupos = new Map<string, Grupo>()
+  for (const l of [...itens].sort((a, b) => b.date.localeCompare(a.date))) {
+    const m = parcela(l.title)
+    const nome = m ? m[1] : l.title
+    const g = grupos.get(nome) ?? { nome, itens: [], total: 0 }
+    g.itens.push(l)
+    g.total += l.amount
+    if (m) g.parcelas = Number(m[3])
+    grupos.set(nome, g)
+  }
+  return [...grupos.values()].sort((a, b) => b.total - a.total)
+}
+
+function TabelaGrupos({ itens, total }: { itens: Lancamento[]; total: number }) {
+  const [abertos, setAbertos] = useState<Set<string>>(new Set())
+  const alternar = (nome: string) =>
+    setAbertos((atual) => {
+      const novo = new Set(atual)
+      if (!novo.delete(nome)) novo.add(nome)
+      return novo
+    })
+  const pct = (v: number) => (total ? `${Math.round((v / total) * 100)}%` : '—')
+
   return (
     <div className="tabela-wrap">
-      <table className="tabela-lancamentos">
+      <table className="tabela-grupos">
         <thead>
-          <tr><th>Data</th><th>Descrição</th><th>Valor</th></tr>
+          <tr><th>Data</th><th>Estabelecimento</th><th>Valor</th><th>% do adicional</th></tr>
         </thead>
         <tbody>
-          {[...itens].sort((a, b) => b.date.localeCompare(a.date)).map((l, i) => {
-            const m = parcela(l.title)
-            return (
-              <tr key={i}>
-                <td>{dataCurta(l.date)}</td>
+          {agrupar(itens).map((g) => {
+            const agrupado = g.itens.length > 1
+            const aberto = abertos.has(g.nome)
+            return [
+              <tr key={g.nome} className={aberto ? 'grupo-aberto' : ''}>
+                {/* Agrupado: data do lançamento mais recente. */}
+                <td>{dataCurta(g.itens[0].date)}</td>
                 <td>
                   <span className="nome-adicional">
-                    {m ? m[1] : l.title}
-                    {m && <span className="tag">parcelado {m[3]}×</span>}
+                    {agrupado ? (
+                      <button type="button" className="expandir" aria-expanded={aberto} onClick={() => alternar(g.nome)}
+                        aria-label={`${aberto ? 'Recolher' : 'Expandir'} ${g.nome}`}>
+                        <span className="seta" aria-hidden>{aberto ? '▾' : '▸'}</span>
+                        {g.nome}
+                        <span className="tag">{g.itens.length}×</span>
+                      </button>
+                    ) : (
+                      g.nome
+                    )}
+                    {g.parcelas && <span className="tag">parcelado {g.parcelas}×</span>}
                   </span>
                 </td>
-                <td>{brl(l.amount)}</td>
-              </tr>
-            )
+                <td><b>{brl(g.total)}</b></td>
+                <td>{pct(g.total)}</td>
+              </tr>,
+              ...(aberto
+                ? g.itens.map((l, i) => (
+                    <tr key={`${g.nome}-${i}`} className="sublinha">
+                      <td>{dataCurta(l.date)}</td>
+                      <td>{g.nome}</td>
+                      <td>{brl(l.amount)}</td>
+                      <td />
+                    </tr>
+                  ))
+                : []),
+            ]
           })}
         </tbody>
       </table>
@@ -111,7 +164,7 @@ export function Adicional() {
       </div>
 
       <h3>Lançamentos de {mes.label}</h3>
-      <TabelaLancamentos itens={mes.itensAdicionais} />
+      <TabelaGrupos key={mes.vencimento} itens={mes.itensAdicionais} total={mes.outros} />
     </Card>
   )
 }
