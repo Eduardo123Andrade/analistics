@@ -11,6 +11,7 @@ const arquivos = import.meta.glob('../../.csvs/Nubank_*.csv', {
 export type Status = 'fechada' | 'atual' | 'aberta' | 'estimada'
 
 export interface Lancamento {
+  date: string // YYYY-MM-DD
   title: string
   amount: number
 }
@@ -60,7 +61,7 @@ function parseCsv(texto: string): Lancamento[] {
       else atual += c
     }
     campos.push(atual)
-    return { title: campos[1], amount: parseValor(campos[2]) }
+    return { date: campos[0], title: campos[1], amount: parseValor(campos[2]) }
   })
 }
 

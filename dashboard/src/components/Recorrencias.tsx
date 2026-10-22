@@ -2,7 +2,7 @@ import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { brl, faturas, faturasComRecorrencia, idxUltimaFechada, recorrencias, type FaturaDetalhada } from '../dados'
-import { Card, eixos, margem, opacidade, StatusTag, tickX } from './grafico'
+import { Card, eixos, margem, opacidade, StatusTag, tickX, useEstreito } from './grafico'
 import { Detalhes } from './Detalhes'
 
 function DicaRecorrencia({ active, payload }: TooltipContentProps<ValueType, NameType>) {
@@ -85,6 +85,7 @@ function LinhaDoTempo() {
 }
 
 export function Recorrencias() {
+  const estreito = useEstreito()
   return (
     <Card
       titulo="Recorrências"
@@ -93,7 +94,7 @@ export function Recorrencias() {
       <ResumoRecorrencias />
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={faturasComRecorrencia} margin={margem} barCategoryGap="30%">
-          {eixos}
+          {eixos(estreito)}
           <Tooltip content={DicaRecorrencia} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
           <Bar dataKey="recorrente" name="Recorrente" fill="var(--series-3)" radius={[4, 4, 0, 0]}>
             {faturasComRecorrencia.map((f) => <Cell key={f.vencimento} fillOpacity={opacidade(f.status)} />)}

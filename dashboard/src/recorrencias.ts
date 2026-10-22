@@ -1,4 +1,4 @@
-import type { Fatura } from './faturas'
+import type { Fatura, Lancamento } from './faturas'
 
 export interface Recorrencia {
   nome: string
@@ -7,6 +7,7 @@ export interface Recorrencia {
   fim: number // índice da última fatura em que apareceu
   ativa: boolean
   valorAtual: number // valor da última cobrança
+  cobrancas: Lancamento[] // lançamentos que fazem parte da recorrência (o resto do estabelecimento é adicional)
 }
 
 // Variação máxima entre uma cobrança e a do mês anterior para ser "a mesma" (ex.: reajuste 20 -> 25).
@@ -42,6 +43,7 @@ const parecido = (a: number, b: number) =>
 
 interface Sequencia {
   valores: Map<number, number>
+  itens: Lancamento[]
   ultimo: number
   ultimoValor: number
 }
@@ -51,22 +53,23 @@ export function detectarRecorrencias(faturas: Fatura[]): Recorrencia[] {
   const idxAtual = faturas.findIndex((f) => f.status === 'atual')
   const ate = idxAtual === -1 ? faturas.length - 1 : idxAtual
 
-  // nome -> cobranças por fatura
-  const porNome = new Map<string, number[][]>()
+  // nome -> lançamentos por fatura
+  const porNome = new Map<string, Lancamento[][]>()
   faturas.slice(0, ate + 1).forEach((f, i) => {
-    for (const { title, amount } of f.lancamentos) {
-      if (title === 'Pagamento recebido' || /Parcela \d+\/\d+/.test(title)) continue
-      const nome = normalizar(title)
+    for (const l of f.lancamentos) {
+      if (l.title === 'Pagamento recebido' || /Parcela \d+\/\d+/.test(l.title)) continue
+      const nome = normalizar(l.title)
       if (IGNORAR.has(nome)) continue
       if (!porNome.has(nome)) porNome.set(nome, faturas.map(() => []))
-      porNome.get(nome)![i].push(amount)
+      porNome.get(nome)![i].push(l)
     }
   })
 
   const recorrencias: Recorrencia[] = []
   for (const [nome, meses] of porNome) {
     const sequencias: Sequencia[] = []
-    meses.forEach((cobrancas, i) => {
+    meses.forEach((lancamentos, i) => {
+      const cobrancas = lancamentos.map((l) => l.amount)
       // Pareia cobranças do mês com sequências em aberto: primeiro o valor mais próximo
       // (diferenças até 10% contam como empate), depois a sequência mais longa.
       const pares = sequencias
@@ -81,11 +84,12 @@ export function detectarRecorrencias(faturas: Fatura[]): Recorrencia[] {
         usadas.add(s)
         pareadas.add(c)
         s.valores.set(i, cobrancas[c])
+        s.itens.push(lancamentos[c])
         s.ultimo = i
         s.ultimoValor = cobrancas[c]
       }
       cobrancas.forEach((v, c) => {
-        if (!pareadas.has(c)) sequencias.push({ valores: new Map([[i, v]]), ultimo: i, ultimoValor: v })
+        if (!pareadas.has(c)) sequencias.push({ valores: new Map([[i, v]]), itens: [lancamentos[c]], ultimo: i, ultimoValor: v })
       })
     })
 
@@ -108,6 +112,7 @@ export function detectarRecorrencias(faturas: Fatura[]): Recorrencia[] {
       // A fatura atual ainda não fechou: quem cobrou na última fechada pode só não ter caído ainda.
       ativa: fim >= ate - 1,
       valorAtual: valores[fim]!,
+      cobrancas: validas.flatMap((s) => s.itens),
     })
   }
 

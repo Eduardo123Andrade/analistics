@@ -1,3 +1,4 @@
+import { Adicional } from './components/Adicional'
 import { Antecipacao } from './components/Antecipacao'
 import { Hachuras } from './components/grafico'
 import { Kpis } from './components/Kpis'
@@ -21,6 +22,7 @@ export default function App() {
       <Projecao />
       <Recorrencias />
       <Antecipacao />
+      <Adicional />
     </main>
   )
 }

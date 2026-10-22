@@ -5,7 +5,7 @@ import type { NameType, ValueType } from 'recharts/types/component/DefaultToolti
 import { alvo, candidatos, efeitoDoPlano, melhorPlano, projecaoAlvo, type Candidato, type Efeito } from '../antecipacao'
 import { brl, faturas } from '../dados'
 import { Detalhes } from './Detalhes'
-import { Card, eixos, margem, textoLegenda } from './grafico'
+import { Card, eixos, margem, textoLegenda, useEstreito } from './grafico'
 
 const atual = faturas.find((f) => f.status === 'atual')
 
@@ -102,6 +102,7 @@ function TabelaCandidatos({ itens, escolhidos }: { itens: Candidato[]; escolhido
 }
 
 export function Antecipacao() {
+  const estreito = useEstreito()
   const [texto, setTexto] = useState('1.000')
   const orcamento = lerValor(texto)
   const [cobrarNaAtual, setCobrarNaAtual] = useState(true)
@@ -167,7 +168,7 @@ export function Antecipacao() {
       </div>
       <ResponsiveContainer width="100%" height={320}>
         <ComposedChart data={efeito} margin={margem} barCategoryGap="25%">
-          {eixos}
+          {eixos(estreito)}
           <Tooltip content={Dica} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
           {SEGMENTOS.map((s, i) => (
             <Bar key={s.chave} dataKey={s.chave} name={s.nome} stackId="e" legendType="square" fill={s.fill} stroke="var(--surface)"

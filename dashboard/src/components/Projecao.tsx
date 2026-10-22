@@ -6,7 +6,7 @@ import {
   adicionalMax, adicionalMedio, adicionalMin, mesMax, mesMin, projecoes, type Projecao as P,
 } from '../projecao'
 import { Detalhes } from './Detalhes'
-import { Card, eixos, margem, StatusTag, textoLegenda } from './grafico'
+import { Card, eixos, margem, StatusTag, textoLegenda, useEstreito } from './grafico'
 
 const dados = projecoes.map((p) => ({
   ...p,
@@ -112,6 +112,7 @@ function Explicacao() {
 }
 
 export function Projecao() {
+  const estreito = useEstreito()
   return (
     <Card
       titulo="Próximas faturas"
@@ -124,7 +125,7 @@ export function Projecao() {
     >
       <ResponsiveContainer width="100%" height={340}>
         <BarChart data={dados} margin={margem} barCategoryGap="25%">
-          {eixos}
+          {eixos(estreito)}
           <Tooltip content={Dica} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
           {SEGMENTOS.map((s, i) => (
             <Bar key={s.chave} dataKey={s.chave} name={s.nome} stackId="p" fill={s.fill} stroke="var(--surface)"

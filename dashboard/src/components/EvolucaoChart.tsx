@@ -1,7 +1,7 @@
 import { Legend, Line, LineChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { faturas, idxUltimaFechada } from '../dados'
 import { DicaFatura } from './DicaFatura'
-import { Card, eixos, margem, textoLegenda } from './grafico'
+import { Card, eixos, margem, textoLegenda, useEstreito } from './grafico'
 
 // Linha sólida para faturas fechadas; tracejada da última fechada em diante (ainda vão mudar).
 const dados = faturas.map((f, i) => ({
@@ -11,11 +11,12 @@ const dados = faturas.map((f, i) => ({
 }))
 
 export function EvolucaoChart() {
+  const estreito = useEstreito()
   return (
     <Card titulo="Evolução da fatura">
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={dados} margin={margem}>
-          {eixos}
+          {eixos(estreito)}
           <Tooltip content={DicaFatura} cursor={{ stroke: 'var(--baseline)' }} />
           <Line dataKey="fechada" name="Fechada" stroke="var(--series-1)" strokeWidth={2}
             dot={{ r: 4, fill: 'var(--series-1)', stroke: 'var(--surface)', strokeWidth: 2 }}

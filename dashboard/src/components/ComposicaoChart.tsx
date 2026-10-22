@@ -1,11 +1,12 @@
 import { Bar, BarChart, Cell, Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import { faturas } from '../dados'
 import { DicaFatura } from './DicaFatura'
-import { Card, eixos, margem, opacidade, textoLegenda } from './grafico'
+import { Card, eixos, margem, opacidade, textoLegenda, useEstreito } from './grafico'
 
 const ORDEM_LEGENDA = ['Base', 'Recorrente', 'Adicional']
 
 export function ComposicaoChart() {
+  const estreito = useEstreito()
   return (
     <Card
       titulo="Base × recorrente × adicional"
@@ -16,7 +17,7 @@ export function ComposicaoChart() {
     >
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={faturas} margin={margem} barCategoryGap="30%">
-          {eixos}
+          {eixos(estreito)}
           <Tooltip content={DicaFatura} cursor={{ fill: 'var(--grid)', opacity: 0.5 }} />
           <Bar dataKey="base" name="Base" stackId="f" fill="var(--series-1)" stroke="var(--surface)" strokeWidth={1}>
             {faturas.map((f) => <Cell key={f.vencimento} fillOpacity={opacidade(f.status)} />)}
